@@ -409,6 +409,10 @@ a:hover {
   border: 1px solid var(--line);
 }
 
+.case-diagram--full img {
+  background: #111820;
+}
+
 .case-diagram figcaption {
   margin-top: 0.75rem;
   font-size: 0.9rem;

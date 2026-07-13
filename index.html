@@ -19,6 +19,7 @@
       <ul class="nav-links">
         <li><a href="#about">About</a></li>
         <li><a href="#brave">BRaVe</a></li>
+        <li><a href="#brave-legacy">Legacy</a></li>
         <li><a href="#contact">Contact</a></li>
       </ul>
     </nav>
@@ -344,6 +345,205 @@
           <li>Microsoft Intune</li>
           <li>Active Directory</li>
         </ul>
+      </div>
+    </section>
+
+    <!-- Project 2: BRaVe Legacy -->
+    <section id="brave-legacy" class="section section-case">
+      <div class="case-header">
+        <p class="case-label">Second project</p>
+        <h2>BRaVe Legacy — Offline field registration platform</h2>
+        <p class="case-role"><strong>Role:</strong> Lead Software Developer / System Architect</p>
+      </div>
+
+      <div class="case-block">
+        <h3>Overview</h3>
+        <p>
+          BRaVe Legacy is a fully offline biometric registration system for field operations.
+          Each field site collects and checks data locally. Sites periodically exchange data with a
+          central server so registrations can be consolidated and duplicates can be found across sites.
+        </p>
+        <p>
+          The design balances disconnected field reality with headquarters-level integrity:
+          collect and match offline, consolidate centrally for cross-site deduplication, then push
+          differentials back to the field.
+        </p>
+      </div>
+
+      <div class="case-block">
+        <h3>Business challenge</h3>
+        <ul class="plain-list">
+          <li>Operate registration with little or no connectivity in the field</li>
+          <li>Support fingerprint capture and fast local duplicate checks</li>
+          <li>Consolidate many field sites into one central picture</li>
+          <li>Detect cross-site duplicates when people register at more than one location</li>
+          <li>Keep field databases and matching stores aligned via periodic differentials</li>
+        </ul>
+      </div>
+
+      <div class="case-block case-diagram">
+        <h3>Field operations</h3>
+        <p>
+          Each site runs a field operations server (SQL Server + licensing), a Debian biometric
+          matching server (Neurotechnology), and data-entry laptops with 4-4-2 fingerprint scanners.
+          On save, the client updates the local database, checks licensing, runs a local duplicate
+          check, and copies biometrics into the matching store.
+        </p>
+        <figure>
+          <img
+            src="assets/brave_legacy_field_operations_settings.png"
+            alt="BRaVe Legacy field operations: field operations server, biometric matching server, and data entry laptop with fingerprint scanner."
+            width="1400"
+            height="900"
+            loading="lazy"
+          />
+          <figcaption>Field site layout — operations server, matching server, and data-entry client.</figcaption>
+        </figure>
+      </div>
+
+      <div class="case-block case-diagram">
+        <h3>Central server</h3>
+        <p>
+          Central hosts SQL Server, a matching server, and a consolidation service that picks up
+          field backups from a shared drive, writes them to the central database, and pushes
+          biometrics into central matching for cross-site deduplication. An admin client can then
+          produce a differential dump for a given period.
+        </p>
+        <figure>
+          <img
+            src="assets/brave_legacy_central_server.png"
+            alt="BRaVe Legacy central server: shared drive inbound, consolidation service, central SQL Server, central matching server, admin client, and outbound differential share."
+            width="1400"
+            height="900"
+            loading="lazy"
+          />
+          <figcaption>Central consolidation, matching, and differential export.</figcaption>
+        </figure>
+      </div>
+
+      <div class="case-block case-diagram">
+        <h3>Data consolidation loop</h3>
+        <p>
+          End of day: the field creates a backup of new and updated registrations and drops it on
+          the inbound share. Central consolidates, then an admin publishes a differential. Field
+          teams download and apply it to update both the local database and matching server.
+        </p>
+        <figure>
+          <img
+            src="assets/brave_legacy_consolidation.png"
+            alt="BRaVe Legacy data consolidation: field backup to central share, consolidation into central systems, differential dump back to the field."
+            width="1400"
+            height="900"
+            loading="lazy"
+          />
+          <figcaption>Field → central consolidation → differential back to field.</figcaption>
+        </figure>
+      </div>
+
+      <div class="case-block">
+        <h3>Key architectural decisions</h3>
+        <div class="decisions">
+          <article class="decision">
+            <h4>Fully offline field operation</h4>
+            <dl>
+              <div>
+                <dt>Challenge</dt>
+                <dd>Field sites often have unreliable or no connectivity.</dd>
+              </div>
+              <div>
+                <dt>Decision</dt>
+                <dd>Run complete local stacks: SQL Server, licensing, and biometric matching on site.</dd>
+              </div>
+              <div>
+                <dt>Outcome</dt>
+                <dd>Registration and local deduplication continue without continuous network access.</dd>
+              </div>
+            </dl>
+          </article>
+          <article class="decision">
+            <h4>Dedicated matching appliance</h4>
+            <dl>
+              <div>
+                <dt>Challenge</dt>
+                <dd>Many-to-many biometric search must stay fast at large template counts.</dd>
+              </div>
+              <div>
+                <dt>Decision</dt>
+                <dd>Deploy Neurotechnology matching on a separate Debian server per site and at central.</dd>
+              </div>
+              <div>
+                <dt>Outcome</dt>
+                <dd>Sub-2s matching even around one million templates, without blocking the SQL path.</dd>
+              </div>
+            </dl>
+          </article>
+          <article class="decision">
+            <h4>File-based consolidation</h4>
+            <dl>
+              <div>
+                <dt>Challenge</dt>
+                <dd>Move data between disconnected sites and headquarters safely.</dd>
+              </div>
+              <div>
+                <dt>Decision</dt>
+                <dd>Use shared-drive backups inbound and differential dumps outbound, processed by a central service.</dd>
+              </div>
+              <div>
+                <dt>Outcome</dt>
+                <dd>Clear operational rhythm without requiring always-on site connectivity.</dd>
+              </div>
+            </dl>
+          </article>
+          <article class="decision">
+            <h4>Cross-site deduplication</h4>
+            <dl>
+              <div>
+                <dt>Challenge</dt>
+                <dd>People may register at site X and later again at site Y.</dd>
+              </div>
+              <div>
+                <dt>Decision</dt>
+                <dd>Push consolidated biometrics into a central matching store after each import.</dd>
+              </div>
+              <div>
+                <dt>Outcome</dt>
+                <dd>Duplicates can be detected across field operations, not only within one site.</dd>
+              </div>
+            </dl>
+          </article>
+        </div>
+      </div>
+
+      <div class="case-block">
+        <h3>Technology landscape</h3>
+        <ul class="tag-list tag-list--wide">
+          <li>SQL Server</li>
+          <li>Windows Forms / .NET</li>
+          <li>Neurotechnology SDK</li>
+          <li>Debian</li>
+          <li>Fingerprint scanners (4-4-2)</li>
+          <li>Licensing server</li>
+<li>Shared-drive exchange</li>
+          <li>Background consolidation service</li>
+          <li>Differential sync</li>
+        </ul>
+      </div>
+
+      <div class="case-block case-diagram case-diagram--full">
+        <h3>Full architecture</h3>
+        <p>
+          End-to-end view of field collection, central consolidation, and the differential sync back to sites.
+        </p>
+        <figure>
+          <img
+            src="assets/brave_legacy_full_architecture.png"
+            alt="BRaVe Legacy full architecture showing field site components, shared drives, central consolidation, and sync back to the field."
+            width="1600"
+            height="1000"
+            loading="lazy"
+          />
+          <figcaption>Complete BRaVe Legacy architecture — field, exchange, and central.</figcaption>
+        </figure>
       </div>
     </section>
 
