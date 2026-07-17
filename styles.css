@@ -455,6 +455,83 @@ a:hover {
   gap: 1.25rem;
 }
 
+.preview-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  max-width: 52rem;
+}
+
+.preview-note {
+  margin: 0 0 1rem;
+  max-width: 48rem;
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+}
+
+.preview-table-wrap {
+  max-width: 32rem;
+  margin-bottom: 1.25rem;
+  overflow-x: auto;
+}
+
+.preview-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.preview-table th,
+.preview-table td {
+  padding: 0.55rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+}
+
+.preview-table th {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--teal);
+  background: var(--panel);
+}
+
+.preview-table td {
+  color: var(--ink-soft);
+}
+
+.preview-table tbody tr:last-child td {
+  border-bottom: none;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.preview-ytd {
+  font-weight: 500;
+  font-size: 0.88em;
+  color: var(--copper-deep);
+}
+
+.preview-card {
+  padding: 1.25rem 1.15rem;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: var(--radius);
+}
+
+.preview-card h4 {
+  margin: 0 0 0.6rem;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+}
+
+.preview-card p {
+  margin: 0;
+  color: var(--ink-soft);
+}
+
 .decision {
   padding: 1.25rem 1.15rem;
   border: 1px solid var(--line);
@@ -629,7 +706,8 @@ a:hover {
 
   .about-grid,
   .ownership-grid,
-  .decisions {
+  .decisions,
+  .preview-grid {
     grid-template-columns: 1fr;
   }
 }
