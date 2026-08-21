@@ -11,13 +11,14 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <a class="skip-link" href="#brave">Skip to case study</a>
+  <a class="skip-link" href="#bidagent">Skip to case study</a>
 
   <header class="site-header">
     <nav class="nav" aria-label="Primary">
       <a class="nav-brand" href="#top">AJG</a>
       <ul class="nav-links">
         <li><a href="#about">About</a></li>
+        <li><a href="#bidagent">BidAgent</a></li>
         <li><a href="#brave">BRaVe</a></li>
         <li><a href="#brave-legacy">Legacy</a></li>
         <li><a href="#contact">Contact</a></li>
@@ -55,7 +56,7 @@
           Designing secure, scalable, and AI-enabled platforms across humanitarian and enterprise environments.
         </p>
         <div class="cta-group">
-          <a class="btn btn-primary" href="#brave">View BRaVe architecture</a>
+          <a class="btn btn-primary" href="#bidagent">View BidAgent workflow</a>
           <a class="btn btn-ghost" href="#about">About the practice</a>
         </div>
       </div>
@@ -102,10 +103,173 @@
       </div>
     </section>
 
-    <!-- Project 1: BRaVe -->
-    <section id="brave" class="section section-case">
+    <!-- Project 1: BidAgent -->
+    <section id="bidagent" class="section section-case">
       <div class="case-header">
         <p class="case-label">Most recent project</p>
+        <h2>BidAgent — Infrastructure Bid Desk</h2>
+        <p class="case-role"><strong>Role:</strong> Sole builder / Solution Architect</p>
+      </div>
+
+      <div class="case-block">
+        <h3>Overview</h3>
+        <p>
+          Proof-of-concept multi-agent bid desk for Miami-area public procurement. Built for a small
+          technology / low-voltage contractor (Arimex Consulting LLC) to find and screen Phase 1
+          packages (~$10k–$100k) without chasing large civil primes.
+        </p>
+        <p>
+          Multi-agent bid desk that discovers Miami-area public tech/electrical packages, screens
+          compliance, and drafts a human-approved bid packet — without ever submitting to the portal.
+        </p>
+      </div>
+
+      <div class="case-block">
+        <h3>Business challenge</h3>
+        <ul class="plain-list">
+          <li>Public ITBs and RFQs are scattered across agency portals</li>
+          <li>Reading packages and checking licenses, insurance, and vendor registration is slow and easy to get wrong</li>
+          <li>Automation helps, but bids must stay human-approved — nothing should auto-submit to a government portal</li>
+        </ul>
+      </div>
+
+      <div class="case-block">
+        <h3>What I built</h3>
+        <p>A full Discover → Evaluate → draft packet workflow:</p>
+        <div class="ownership-grid">
+          <article>
+            <h4>Discover</h4>
+            <ul>
+              <li>Live shortlist from Miami-Dade StratProc, City of Miami BidNet Direct, and related Florida BidNet purchasing-group listings</li>
+              <li>Clear notices where portals are login-walled</li>
+            </ul>
+          </article>
+          <article>
+            <h4>Evaluate</h4>
+            <ul>
+              <li>Upload PDF/DOCX/text solicitations</li>
+              <li>Extract requirements; run compliance against a contractor profile</li>
+              <li>Score bid/no-bid with hard stops for missing license, COI, or vendor registration</li>
+            </ul>
+          </article>
+          <article>
+            <h4>Go path</h4>
+            <ul>
+              <li>Work packages and labor-hour estimate buildup from a price book</li>
+              <li>Risk register and draft strategy packet</li>
+              <li>Packet stays non-final until a human approves</li>
+            </ul>
+          </article>
+          <article>
+            <h4>Bid Desk UI</h4>
+            <ul>
+              <li>Browser client for Discover, Evaluate, Jobs, and company profile / labor rates</li>
+              <li>Never auto-submits to agency portals</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+
+      <div class="case-block case-diagram">
+        <h3>Agentic workflow</h3>
+        <p>
+          Discover opportunities, evaluate solicitations, estimate and draft a packet, then require
+          human approval before anything is treated as bid-ready.
+        </p>
+        <figure>
+          <img
+            src="assets/Infrastructure_bid_agent.png"
+            alt="BidAgent infrastructure workflow: Discover, Evaluate, Go path agents, Bid Desk UI, and human approval without portal auto-submit."
+            width="1400"
+            height="900"
+            loading="lazy"
+          />
+          <figcaption>BidAgent agentic workflow — discover, evaluate, draft packet, human approval.</figcaption>
+        </figure>
+      </div>
+
+      <div class="case-block">
+        <h3>Key architectural decisions</h3>
+        <div class="decisions">
+          <article class="decision">
+            <h4>LLM for reading; code for money</h4>
+            <dl>
+              <div>
+                <dt>Challenge</dt>
+                <dd>Agents must extract requirements and reason about compliance without becoming the system of record for dollars.</dd>
+              </div>
+              <div>
+                <dt>Decision</dt>
+                <dd>Azure OpenAI for structured agent outputs; deterministic C# for markup math and labor-hour pricing.</dd>
+              </div>
+              <div>
+                <dt>Outcome</dt>
+                <dd>Readable solicitations and scored recommendations, with pricing that stays auditable and policy-bound.</dd>
+              </div>
+            </dl>
+          </article>
+          <article class="decision">
+            <h4>Safety-first bidding</h4>
+            <dl>
+              <div>
+                <dt>Challenge</dt>
+                <dd>Regulated public procurement must not allow accidental or automated portal submission.</dd>
+              </div>
+              <div>
+                <dt>Decision</dt>
+                <dd>Hard stops for missing license/COI/registration; packet approval only marks the draft as human-approved; no agency portal submit.</dd>
+              </div>
+              <div>
+                <dt>Outcome</dt>
+                <dd>Automation accelerates screening while a human remains accountable for the bid decision.</dd>
+              </div>
+            </dl>
+          </article>
+          <article class="decision">
+            <h4>Real portal integration</h4>
+            <dl>
+              <div>
+                <dt>Challenge</dt>
+                <dd>Public sources are uneven: some are open, others login-walled.</dd>
+              </div>
+              <div>
+                <dt>Decision</dt>
+                <dd>Composite opportunity search and solicitation fetchers for Miami-area sources, with honest notices where access is blocked.</dd>
+              </div>
+              <div>
+                <dt>Outcome</dt>
+                <dd>A usable shortlist grounded in live portals — not only mocks.</dd>
+              </div>
+            </dl>
+          </article>
+        </div>
+      </div>
+
+      <div class="case-block">
+        <h3>Scope focus</h3>
+        <p>
+          Practical Phase 1 scope: structured cabling, CCTV, access control, network, building technology,
+          and electrical-tech packages.
+        </p>
+      </div>
+
+      <div class="case-block">
+        <h3>Technology landscape</h3>
+        <ul class="tag-list tag-list--wide">
+          <li>.NET 9 / ASP.NET Core</li>
+          <li>SQL Server</li>
+          <li>Azure OpenAI</li>
+          <li>Static Bid Desk (HTML/CSS/JS)</li>
+          <li>Stored procedures &amp; paged lists</li>
+          <li>Portal adapters (Miami-area)</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Project 2: BRaVe -->
+    <section id="brave" class="section section-case">
+      <div class="case-header">
+        <p class="case-label">Second project</p>
         <h2>BRaVe — Biometric Registration &amp; Verification System</h2>
         <p class="case-role"><strong>Role:</strong> Lead Solution Architect &amp; Technical Lead</p>
       </div>
@@ -411,10 +575,10 @@
       </div>
     </section>
 
-    <!-- Project 2: BRaVe Legacy -->
+    <!-- Project 3: BRaVe Legacy -->
     <section id="brave-legacy" class="section section-case">
       <div class="case-header">
-        <p class="case-label">Second project</p>
+        <p class="case-label">Third project</p>
         <h2>BRaVe Legacy — Offline field registration platform</h2>
         <p class="case-role"><strong>Role:</strong> Lead Software Developer / System Architect</p>
       </div>
