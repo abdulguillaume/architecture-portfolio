@@ -420,6 +420,25 @@ a:hover {
   max-width: 48rem;
 }
 
+.mermaid-figure {
+  margin: 0;
+  padding: 1rem 1.1rem 0.85rem;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  overflow-x: auto;
+}
+
+.mermaid-figure .mermaid {
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+}
+
+.mermaid-figure svg {
+  max-width: 100%;
+  height: auto;
+}
+
 .ownership-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

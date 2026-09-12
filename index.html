@@ -57,7 +57,10 @@
           Designing secure, scalable, and AI-enabled platforms across humanitarian and enterprise environments.
         </p>
         <div class="cta-group">
-          <a class="btn btn-primary" href="#proposal-eval">View Proposal Evaluator</a>
+          <a class="btn btn-primary" href="#proposal-eval">Proposal Evaluator</a>
+          <a class="btn btn-ghost" href="#bidagent">BidAgent</a>
+          <a class="btn btn-ghost" href="#brave">BRaVe</a>
+          <a class="btn btn-ghost" href="#brave-legacy">BRaVe Legacy</a>
           <a class="btn btn-ghost" href="#about">About the practice</a>
         </div>
       </div>
@@ -129,6 +132,22 @@
           <strong>setup, challenge, and approval</strong> — not reread twenty methodology PDFs.
           The system drafts technical scores; it does not replace the evaluation committee.
         </p>
+        <p>
+          This share is a <strong>POC</strong>: authentication and authorization are not in scope.
+          Whoever creates the RFQ can add agents and can approve or reject agent summaries and scores —
+          there is no separate evaluator role or login gate yet.
+        </p>
+      </div>
+
+      <div class="case-block">
+        <h3>Cost impact</h3>
+        <p>
+          Almost all variable API cost is the LLM — for this ~21-vendor RFQ, a full technical first pass
+          on <code>gpt-4o-mini</code> is on the order of <strong>$1–$4</strong>. The larger saving is staff time:
+          without the system, three evaluators doing a first full read can mean tens of hours
+          (e.g. ~1 hour per pack × 21 × 3). With it, agents draft summaries and scores; people skim and
+          accept or reject — hours of gated review instead of first-reading every pack.
+        </p>
       </div>
 
       <div class="case-block">
@@ -144,6 +163,37 @@
           <li><strong>Agent host</strong> — model + tool loop (summary agent, scoring agent)</li>
           <li><strong>MCP</strong> — thin adapter over app APIs; model swappable (OpenRouter, Groq, Azure OpenAI)</li>
         </ul>
+      </div>
+
+      <div class="case-block case-diagram">
+        <h3>Agentic workflow</h3>
+        <p>
+          Staff load the RFQ and vendor packs; agents draft a summary then scores; evaluators
+          accept or reject at each gate. Ranking stays in the application.
+        </p>
+        <figure class="mermaid-figure">
+          <pre class="mermaid">
+flowchart LR
+  Staff[Staff]
+  App[Application]
+  Summary[Summary agent]
+  Eval[Evaluator]
+  Score[Scoring agent]
+
+  Staff -->|RFQ, profiles, files| App
+  Staff -->|request evaluation| App
+  App -->|prepared prompt + tools| Summary
+  Summary -->|draft brief| App
+  Eval -->|accept or reject summary| App
+  App -->|accepted brief + files| Score
+  Score -->|draft scores| App
+  App -->|TWS and rank| Eval
+  Eval -->|accept or reject scores| App
+          </pre>
+          <figcaption>
+            Proposal Evaluator agentic workflow — app owns facts; agents draft; people approve.
+          </figcaption>
+        </figure>
       </div>
 
       <div class="case-block">
@@ -263,17 +313,31 @@
         <h3>Agentic workflow</h3>
         <p>
           Discover opportunities, evaluate solicitations, estimate and draft a packet, then require
-          human approval before anything is treated as bid-ready.
+          human approval before anything is treated as bid-ready. Nothing auto-submits to agency portals.
         </p>
-        <figure>
-          <img
-            src="assets/Infrastructure_bid_agent.png"
-            alt="BidAgent infrastructure workflow: Discover, Evaluate, Go path agents, Bid Desk UI, and human approval without portal auto-submit."
-            width="1400"
-            height="900"
-            loading="lazy"
-          />
-          <figcaption>BidAgent agentic workflow — discover, evaluate, draft packet, human approval.</figcaption>
+        <figure class="mermaid-figure">
+          <pre class="mermaid">
+flowchart LR
+  Portals[Agency portals]
+  Desk[Bid Desk]
+  Discover[Discover]
+  Evaluate[Evaluate]
+  GoPath[Go path]
+  Human[Human approval]
+  Packet[Draft packet]
+
+  Portals -->|shortlist / fetch| Discover
+  Desk --> Discover
+  Discover -->|opportunity| Evaluate
+  Evaluate -->|requirements + compliance| GoPath
+  GoPath -->|packages, estimate, risk| Packet
+  Packet --> Human
+  Human -->|approve draft only| Desk
+  Human -.->|no portal submit| Portals
+          </pre>
+          <figcaption>
+            BidAgent agentic workflow — discover, evaluate, draft packet, human approval; never auto-submit.
+          </figcaption>
         </figure>
       </div>
 
@@ -482,16 +546,46 @@
 
       <div class="case-block case-diagram">
         <h3>Architecture diagram</h3>
-        <figure>
-          <img
-            src="assets/BRaVe_Architecture.png"
-            alt="BRaVe high-level architecture: mobile and portal channels, mobile and management backends, Azure Service Bus messaging, shared database, and biometric matching services."
-            width="1600"
-            height="900"
-            loading="lazy"
-          />
+        <p>
+          Channels feed application backends; shared platform services handle messaging and data;
+          biometric and AI components run as dedicated matching and targeting paths.
+        </p>
+        <figure class="mermaid-figure">
+          <pre class="mermaid">
+flowchart TB
+  subgraph Channels
+    Mobile[Mobile app - offline sync]
+    Portal[Web portal]
+  end
+
+  subgraph Application
+    MBE[Mobile backend services]
+    MGT[Management backend services]
+  end
+
+  subgraph Platform
+    SB[Azure Service Bus]
+    SQL[(Azure SQL - multi-tenant RLS)]
+  end
+
+  subgraph BioAI[AI and biometrics]
+    Match[Biometric matching]
+    Dedup[Deduplication]
+    Target[Targeting engine]
+  end
+
+  Mobile --> MBE
+  Portal --> MGT
+  MBE --> SB
+  MGT --> SB
+  MBE --> SQL
+  MGT --> SQL
+  SB --> Match
+  SB --> Dedup
+  MGT --> Target
+          </pre>
           <figcaption>
-            Channels → application backends → shared platform services (messaging + data) → biometric matching components.
+            Channels → application backends → shared platform services → biometric matching and targeting.
           </figcaption>
         </figure>
       </div>
@@ -625,14 +719,20 @@
 
       <div class="case-block">
         <h3>Technical leadership</h3>
-        <figure class="team-diagram">
-          <img
-            src="assets/team_structure.png"
-            alt="Team structure: Product Owner above Solution Architect (Me), who leads Dev1, Dev2, and Dev3."
-            width="800"
-            height="600"
-            loading="lazy"
-          />
+        <figure class="mermaid-figure team-diagram">
+          <pre class="mermaid">
+flowchart TD
+  PO[Product Owner]
+  SA[Solution Architect - Me]
+  D1[Dev1]
+  D2[Dev2]
+  D3[Dev3]
+
+  PO --> SA
+  SA --> D1
+  SA --> D2
+  SA --> D3
+          </pre>
           <figcaption>Product Owner → Solution Architect (Me) → Dev1, Dev2, Dev3.</figcaption>
         </figure>
         <h4 class="subhead">Responsibilities</h4>
@@ -791,14 +891,29 @@
           On save, the client updates the local database, checks licensing, runs a local duplicate
           check, and copies biometrics into the matching store.
         </p>
-        <figure>
-          <img
-            src="assets/brave_legacy_field_operations_settings.png"
-            alt="BRaVe Legacy field operations: field operations server, biometric matching server, and data entry laptop with fingerprint scanner."
-            width="1400"
-            height="900"
-            loading="lazy"
-          />
+        <figure class="mermaid-figure">
+          <pre class="mermaid">
+flowchart TB
+  subgraph FieldOps[A - Field operations server]
+    SQL[(SQL Server - BRaVe database)]
+    LIC[Licensing server]
+  end
+
+  subgraph MatchingHost[B - Biometric matching server]
+    BMS[Neurotechnology matching]
+  end
+
+  subgraph DataEntry[C - Data entry laptop]
+    APP[Legacy BRaVe client]
+    FP[Fingerprint scanner 4-4-2]
+    FP --- APP
+  end
+
+  APP -- save registration --> SQL
+  APP -- license check --> LIC
+  APP -- duplicate check --> BMS
+  APP -- copy biometrics --> BMS
+          </pre>
           <figcaption>Field site layout — operations server, matching server, and data-entry client.</figcaption>
         </figure>
       </div>
@@ -811,14 +926,22 @@
           biometrics into central matching for cross-site deduplication. An admin client can then
           produce a differential dump for a given period.
         </p>
-        <figure>
-          <img
-            src="assets/brave_legacy_central_server.png"
-            alt="BRaVe Legacy central server: shared drive inbound, consolidation service, central SQL Server, central matching server, admin client, and outbound differential share."
-            width="1400"
-            height="900"
-            loading="lazy"
-          />
+        <figure class="mermaid-figure">
+          <pre class="mermaid">
+flowchart TB
+  SHARE_IN[(Shared drive - field backups in)]
+  SVC[Consolidation service]
+  CSQL[(Central SQL Server)]
+  CMS[Central matching - cross-site dedup]
+  ADMIN[Admin client]
+  SHARE_OUT[(Shared drive - differential out)]
+
+  SHARE_IN -- pickup backup --> SVC
+  SVC -- consolidate to DB --> CSQL
+  SVC -- push biometrics --> CMS
+  ADMIN -- connected to DB --> CSQL
+  ADMIN -- differential dump --> SHARE_OUT
+          </pre>
           <figcaption>Central consolidation, matching, and differential export.</figcaption>
         </figure>
       </div>
@@ -830,14 +953,36 @@
           the inbound share. Central consolidates, then an admin publishes a differential. Field
           teams download and apply it to update both the local database and matching server.
         </p>
-        <figure>
-          <img
-            src="assets/brave_legacy_consolidation.png"
-            alt="BRaVe Legacy data consolidation: field backup to central share, consolidation into central systems, differential dump back to the field."
-            width="1400"
-            height="900"
-            loading="lazy"
-          />
+        <figure class="mermaid-figure">
+          <pre class="mermaid">
+flowchart LR
+  subgraph Field[Field operations]
+    FSQL[(Field SQL)]
+    FBMS[Field matching]
+    FAPP[Field ops app]
+  end
+
+  subgraph Exchange[Shared drives]
+    SHARE_IN[(Backups in)]
+    SHARE_OUT[(Differential out)]
+  end
+
+  subgraph Central[Central]
+    SVC[Consolidation service]
+    CSQL[(Central SQL)]
+    CMS[Central matching]
+    ADMIN[Admin client]
+  end
+
+  FAPP -- end-of-day backup --> SHARE_IN
+  SHARE_IN --> SVC
+  SVC -- consolidate --> CSQL
+  SVC -- push biometrics --> CMS
+  ADMIN -- differential dump --> SHARE_OUT
+  SHARE_OUT -- download and apply --> FAPP
+  FAPP -- update DB --> FSQL
+  FAPP -- update matching --> FBMS
+          </pre>
           <figcaption>Field → central consolidation → differential back to field.</figcaption>
         </figure>
       </div>
@@ -925,7 +1070,7 @@
           <li>Debian</li>
           <li>Fingerprint scanners (4-4-2)</li>
           <li>Licensing server</li>
-<li>Shared-drive exchange</li>
+          <li>Shared-drive exchange</li>
           <li>Background consolidation service</li>
           <li>Differential sync</li>
         </ul>
@@ -936,14 +1081,54 @@
         <p>
           End-to-end view of field collection, central consolidation, and the differential sync back to sites.
         </p>
-        <figure>
-          <img
-            src="assets/brave_legacy_full_architecture.png"
-            alt="BRaVe Legacy full architecture showing field site components, shared drives, central consolidation, and sync back to the field."
-            width="1600"
-            height="1000"
-            loading="lazy"
-          />
+        <figure class="mermaid-figure">
+          <pre class="mermaid">
+flowchart TB
+  subgraph FieldSite[Field site - fully offline]
+    subgraph FieldOps[Field operations server]
+      SQL[(SQL Server)]
+      LIC[Licensing]
+      BAK[End-of-day backup]
+      SYNC[Apply differential]
+    end
+
+    subgraph MatchingHost[Matching server]
+      BMS[Neurotechnology matching]
+    end
+
+    subgraph DataEntry[Data entry]
+      APP[Legacy client]
+      FP[Scanner 4-4-2]
+      FP --- APP
+    end
+
+    APP --> SQL
+    APP --> LIC
+    APP --> BMS
+    BAK --> SQL
+    SYNC --> SQL
+    SYNC --> BMS
+  end
+
+  BAK --> SHARE_IN
+
+  subgraph Central[Central]
+    SHARE_IN[(Backups in)]
+    SVC[Consolidation service]
+    CSQL[(Central SQL)]
+    CMS[Central matching]
+    ADMIN[Admin client]
+    SHARE_OUT[(Differential out)]
+
+    SHARE_IN --> SVC
+    SVC --> CSQL
+    SVC --> CMS
+    ADMIN --> CSQL
+    ADMIN --> SHARE_OUT
+  end
+
+  SHARE_OUT --> SYNC
+          </pre>
           <figcaption>Complete BRaVe Legacy architecture — field, exchange, and central.</figcaption>
         </figure>
       </div>
@@ -966,6 +1151,24 @@
     <p>Architecture portfolio · Built for GitHub Pages</p>
   </footer>
 
+  <script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: "base",
+      securityLevel: "strict",
+      flowchart: { curve: "basis", htmlLabels: true },
+      themeVariables: {
+        primaryColor: "#e8eef4",
+        primaryTextColor: "#1a2332",
+        primaryBorderColor: "#2a6b6b",
+        lineColor: "#3d4a5c",
+        secondaryColor: "#f4f7fa",
+        tertiaryColor: "#ffffff",
+        fontFamily: "Libre Franklin, sans-serif"
+      }
+    });
+  </script>
   <script src="script.js"></script>
 </body>
 </html>
