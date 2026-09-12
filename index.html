@@ -11,13 +11,14 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <a class="skip-link" href="#bidagent">Skip to case study</a>
+  <a class="skip-link" href="#proposal-eval">Skip to case study</a>
 
   <header class="site-header">
     <nav class="nav" aria-label="Primary">
       <a class="nav-brand" href="#top">AJG</a>
       <ul class="nav-links">
         <li><a href="#about">About</a></li>
+        <li><a href="#proposal-eval">Proposal Eval</a></li>
         <li><a href="#bidagent">BidAgent</a></li>
         <li><a href="#brave">BRaVe</a></li>
         <li><a href="#brave-legacy">Legacy</a></li>
@@ -56,7 +57,7 @@
           Designing secure, scalable, and AI-enabled platforms across humanitarian and enterprise environments.
         </p>
         <div class="cta-group">
-          <a class="btn btn-primary" href="#bidagent">View BidAgent workflow</a>
+          <a class="btn btn-primary" href="#proposal-eval">View Proposal Evaluator</a>
           <a class="btn btn-ghost" href="#about">About the practice</a>
         </div>
       </div>
@@ -103,10 +104,98 @@
       </div>
     </section>
 
-    <!-- Project 1: BidAgent -->
-    <section id="bidagent" class="section section-case">
+    <!-- Project 1: Proposal Evaluator -->
+    <section id="proposal-eval" class="section section-case">
       <div class="case-header">
         <p class="case-label">Most recent project</p>
+        <h2>Proposal Evaluator — Human-in-the-loop RFQ scoring</h2>
+        <p class="case-role"><strong>Role:</strong> Sole builder / Solution Architect</p>
+        <p class="case-role">
+          <strong>Open source:</strong>
+          <a href="https://github.com/abdulguillaume/ProposalEvaluation" target="_blank" rel="noopener noreferrer">github.com/abdulguillaume/ProposalEvaluation</a>
+        </p>
+      </div>
+
+      <div class="case-block">
+        <h3>Context</h3>
+        <p>
+          A combined-method RFQ (technical 70% / financial 30%) often arrives as email attachments and
+          shared folders — for this POC, about <strong>21 vendor packs</strong> and
+          <strong>three staff evaluators</strong>. Each bid meant reading the full offer against a long TOR,
+          scoring the same criteria, and keeping a ranking that would stand up in committee.
+        </p>
+        <p>
+          That first pass is slow and hard to keep consistent. People should own
+          <strong>setup, challenge, and approval</strong> — not reread twenty methodology PDFs.
+          The system drafts technical scores; it does not replace the evaluation committee.
+        </p>
+      </div>
+
+      <div class="case-block">
+        <h3>High-level architecture</h3>
+        <p>
+          The <strong>application owns the facts</strong> (RFQ, vendor profiles, files, jobs, summaries, scores).
+          <strong>Narrow agents run late</strong>, only after a person requests evaluation, with a prepared prompt
+          and job-scoped tools. <strong>People stay on the gates</strong>: accept/reject the summary, then
+          accept/reject scores. The app computes TWS, pass/fail, and rank — agents never do the math.
+        </p>
+        <ul class="plain-list">
+          <li><strong>Web app</strong> — intake, review UI, APIs, deterministic ranking</li>
+          <li><strong>Agent host</strong> — model + tool loop (summary agent, scoring agent)</li>
+          <li><strong>MCP</strong> — thin adapter over app APIs; model swappable (OpenRouter, Groq, Azure OpenAI)</li>
+        </ul>
+      </div>
+
+      <div class="case-block">
+        <h3>Tradeoffs</h3>
+        <div class="decisions">
+          <article class="decision">
+            <h4>App owns totals; agents draft scores</h4>
+            <dl>
+              <div>
+                <dt>Why</dt>
+                <dd>Same formula for every vendor; no model arithmetic errors on weighted totals.</dd>
+              </div>
+              <div>
+                <dt>Cost</dt>
+                <dd>Agents cannot “just give a total”; tool failures must be visible in the job.</dd>
+              </div>
+            </dl>
+          </article>
+          <article class="decision">
+            <h4>Two agents + summary gate</h4>
+            <dl>
+              <div>
+                <dt>Why</dt>
+                <dd>Cheap to stop a non-responsive bid before scoring; scoring uses one accepted brief.</dd>
+              </div>
+              <div>
+                <dt>Cost</dt>
+                <dd>Two model runs per accepted vendor and more review clicks.</dd>
+              </div>
+            </dl>
+          </article>
+          <article class="decision">
+            <h4>Consistency over autonomy</h4>
+            <dl>
+              <div>
+                <dt>Why</dt>
+                <dd>Prepared prompts, tools over SQL, and human accept/reject fit real procurement review.</dd>
+              </div>
+              <div>
+                <dt>Cost</dt>
+                <dd>Slower at the keyboard than a “score the folder” bot — safer in a committee file.</dd>
+              </div>
+            </dl>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Project 2: BidAgent -->
+    <section id="bidagent" class="section section-case">
+      <div class="case-header">
+        <p class="case-label">Second project</p>
         <h2>BidAgent — Infrastructure Bid Desk</h2>
         <p class="case-role"><strong>Role:</strong> Sole builder / Solution Architect</p>
       </div>
@@ -266,10 +355,10 @@
       </div>
     </section>
 
-    <!-- Project 2: BRaVe -->
+    <!-- Project 3: BRaVe -->
     <section id="brave" class="section section-case">
       <div class="case-header">
-        <p class="case-label">Second project</p>
+        <p class="case-label">Third project</p>
         <h2>BRaVe — Biometric Registration &amp; Verification System</h2>
         <p class="case-role"><strong>Role:</strong> Lead Solution Architect &amp; Technical Lead</p>
       </div>
@@ -575,10 +664,10 @@
       </div>
     </section>
 
-    <!-- Project 3: BRaVe Legacy -->
+    <!-- Project 4: BRaVe Legacy -->
     <section id="brave-legacy" class="section section-case">
       <div class="case-header">
-        <p class="case-label">Third project</p>
+        <p class="case-label">Fourth project</p>
         <h2>BRaVe Legacy — Offline field registration platform</h2>
         <p class="case-role"><strong>Role:</strong> Lead Software Developer / System Architect</p>
       </div>
