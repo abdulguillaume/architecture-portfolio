@@ -547,45 +547,46 @@ flowchart LR
       <div class="case-block case-diagram">
         <h3>Architecture diagram</h3>
         <p>
-          Channels feed application backends; shared platform services handle messaging and data;
-          biometric and AI components run as dedicated matching and targeting paths.
+          Channels feed application backends. Shared platform services handle messaging and data.
+          Targeting and deduplication run inside the management API for now — they can move to
+          separate App Services later if load requires it, but that is not expected in the coming
+          five years. Biometric matching stays on its own worker and matching server.
         </p>
         <figure class="mermaid-figure">
           <pre class="mermaid">
 flowchart TB
-  subgraph Channels
-    Mobile[Mobile app - offline sync]
-    Portal[Web portal]
-  end
+subgraph Channels["User facing applications"]
+  Mobile[Mobile app - offline sync]
+  Portal[Web portal]
+end
 
-  subgraph Application
-    MBE[Mobile backend services]
-    MGT[Management backend services]
-  end
+subgraph Application["Application backend APIs"]
+  MBE[Mobile backend services]
+  MGT[Management API - targeting, dedup, portal APIs]
+end
 
-  subgraph Platform
-    SB[Azure Service Bus]
-    SQL[(Azure SQL - multi-tenant RLS)]
-  end
+subgraph Platform["Platform services"]
+  SB[Azure Service Bus]
+  SQL[(Azure SQL - multi-tenant RLS)]
+end
 
-  subgraph BioAI[AI and biometrics]
-    Match[Biometric matching]
-    Dedup[Deduplication]
-    Target[Targeting engine]
-  end
+subgraph BioAI[Biometrics]
+  MatchWorker[Biometric matching worker/container]
+  MatchSvr[Biometric Matching server/VM]
+end
 
-  Mobile --> MBE
-  Portal --> MGT
-  MBE --> SB
-  MGT --> SB
-  MBE --> SQL
-  MGT --> SQL
-  SB --> Match
-  SB --> Dedup
-  MGT --> Target
+Mobile <--> MBE
+Portal <--> MGT
+MBE --> SB
+MGT --> SB
+MBE <--> SQL
+MGT <--> SQL
+SB --> MatchWorker
+MatchWorker <--> SQL
+MatchWorker --> MatchSvr
           </pre>
           <figcaption>
-            Channels → application backends → shared platform services → biometric matching and targeting.
+            Channels → application backends → shared platform services → biometric matching worker. Targeting and dedup live in the management API.
           </figcaption>
         </figure>
       </div>
@@ -604,7 +605,7 @@ flowchart TB
             <h4>Application</h4>
             <ul>
               <li>Mobile Backend Services</li>
-              <li>Management Backend Services</li>
+              <li>Management API (targeting, dedup, portal APIs)</li>
             </ul>
           </article>
           <article>
@@ -634,9 +635,8 @@ flowchart TB
           <article>
             <h4>AI &amp; Biometrics</h4>
             <ul>
-              <li>Targeting Engine</li>
-              <li>Deduplication Engine</li>
-              <li>Biometric Matching</li>
+              <li>Targeting and dedup in the Management API</li>
+              <li>Biometric Matching (worker + matching server)</li>
               <li>Beneficiary Verification</li>
             </ul>
           </article>
